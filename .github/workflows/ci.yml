@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         toolchain: [stable, beta, nightly]
+        features: [--no-default-features, --workspace-features]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -26,7 +27,40 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --all-features --all
+          args: ${{ maxtix.features }} --workspace
+
+  no-std:
+    name: no_std Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install cargo no-std-check
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: no-std-check
+
+      # `--no-default-features` doesn't work with --workspace correctly.
+      - name: Run cargo no-std-check on libflate crate
+        uses: actions-rs/cargo@v1
+        with:
+          command: no-std-check
+          args: --no-default-features
+
+      - name: Run cargo no-std-check on libflate_lz77 crate
+        uses: actions-rs/cargo@v1
+        with:
+          command: no-std-check
+          args: --no-default-features --manifest-path libflate_lz77/Cargo.toml
 
   test:
     name: Test Suite
@@ -34,6 +68,7 @@ jobs:
     strategy:
       matrix:
         toolchain: [stable, beta, nightly]
+        features: [--no-default-features, --workspace-features]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -49,7 +84,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features --all
+          args: ${{ maxtix.features }} --workspace
 
   lints:
     name: Lints
@@ -57,6 +92,7 @@ jobs:
     strategy:
       matrix:
         toolchain: [stable, beta, nightly]
+        features: [--no-default-features, --workspace-features]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -73,23 +109,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
-
-      - name: Run cargo clippy
-        if: matrix.toolchain == 'beta'
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          # As `return_self_not_must_use` became `pedantic` in the 1.60.0-nightly channel,
-          # we allow the warning to avoid unnecessary code fixes.
-          # See: https://github.com/rust-lang/rust-clippy/issues/8197
-          #
-          # TODO: Remove this branch once stable-1.59.0 is released.
-          args: --all-features --all -- -D warnings --allow clippy::return_self_not_must_use
+          args: --workspace -- --check
 
       - name: Run cargo clippy
         if: matrix.toolchain != 'beta'
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-features --all -- -D warnings
+          args: ${{ maxtix.features }} --workspace -- -D warnings
