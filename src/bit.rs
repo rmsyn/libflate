@@ -180,6 +180,8 @@ mod tests {
     use core2::io;
     #[cfg(feature = "std")]
     use std::io;
+    #[cfg(not(feature = "std"))]
+    use alloc::vec::Vec;
 
     #[test]
     fn writer_works() {

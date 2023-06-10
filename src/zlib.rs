@@ -688,6 +688,8 @@ mod tests {
     use super::*;
     use crate::finish::AutoFinish;
     #[cfg(not(feature = "std"))]
+    use alloc::{borrow::ToOwned, string::ToString, vec, vec::Vec};
+    #[cfg(not(feature = "std"))]
     use core2::io::{Read as _, Write as _};
     #[cfg(feature = "std")]
     use std::io::{Read as _, Write as _};

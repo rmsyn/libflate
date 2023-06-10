@@ -158,6 +158,8 @@ mod tests {
     use crate::util::{nb_read_to_end, WouldBlockReader};
     use crate::zlib::{EncodeOptions, Encoder};
     use core2::io::Write;
+    #[cfg(not(feature = "std"))]
+    use alloc::vec::Vec;
 
     fn decode_all(buf: &[u8]) -> io::Result<Vec<u8>> {
         let decoder = Decoder::new(WouldBlockReader::new(buf));

@@ -242,6 +242,8 @@ mod tests {
     use crate::deflate::{EncodeOptions, Encoder};
     use crate::util::{nb_read_to_end, WouldBlockReader};
     use core2::io::{Read, Write};
+    #[cfg(not(feature = "std"))]
+    use alloc::{format, string::String, vec::Vec};
 
     #[test]
     fn it_works() {
